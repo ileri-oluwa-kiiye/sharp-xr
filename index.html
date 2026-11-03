@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays</title>
+  <meta name="description" content="SharpXR is a structure-aware dual-decoder U-Net that denoises low-dose pediatric chest X-rays while preserving diagnostically relevant features.">
+  <meta property="og:title" content="SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays">
+  <meta property="og:description" content="A dual-decoder U-Net with Laplacian-guided edge preservation and learnable fusion for low-dose pediatric chest X-ray denoising.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="hero">
+  <div class="container">
+    <h1 class="publication-title">SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays</h1>
+
+    <p class="authors">
+      <a href="#">Ilerioluwakiiye Abolade</a><sup>1</sup>,
+      <a href="#">Emmanuel Idoko</a><sup>2</sup>,
+      <a href="#">Solomon Odelola</a><sup>3</sup>,
+      <a href="#">Promise Omoigui</a><sup>4</sup>,
+      <a href="#">Adetola Adebanwo</a><sup>5</sup>,
+      <a href="#">Aondana Iorumbur</a><sup>6</sup>,
+      <a href="#">Udunna Anazodo</a><sup>7</sup>,
+      <a href="#">Alessandro Crimi</a><sup>8</sup>,
+      <a href="#">Raymond Confidence</a><sup>7</sup>
+    </p>
+
+    <p class="affiliations">
+      <span><sup>1</sup>Federal University of Agriculture Abeokuta, Nigeria</span>
+      <span><sup>2</sup>University of Lagos, Nigeria</span>
+      <span><sup>3</sup>University of Nigeria, Nigeria</span>
+      <span><sup>4</sup>University of Benin, Nigeria</span>
+      <span><sup>5</sup>Olabisi Onabanjo University, Nigeria</span>
+      <span><sup>6</sup>Federal University of Technology, Nigeria</span>
+      <span><sup>7</sup>McGill University, Canada</span>
+      <span><sup>8</sup>AGH University of Krakow, Poland</span>
+    </p>
+
+
+    <p class="venue">MIRASOL @ MICCAI 2026</p>
+
+    <div class="link-buttons">
+      <!-- Replace each "#" with the real link. Remove "disabled" once a link is set. -->
+      <a class="btn disabled" href="#" target="_blank" rel="noopener">Paper</a>
+      <a class="btn disabled" href="#" target="_blank" rel="noopener">arXiv</a>
+      <a class="btn" href="https://github.com/ileri-oluwa-kiiye/SharpXR" target="_blank" rel="noopener">Code</a>
+      <a class="btn" href="#bibtex">BibTeX</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= TEASER (paper Fig. 2) ================= -->
+<div class="teaser">
+  <div class="container">
+    <figure data-img>
+      <img src="images/qualitative.png" alt="Qualitative comparison of denoised pediatric chest X-rays across methods">
+      <div class="img-missing">Add <code>images/qualitative.png</code> (Figure 2 from the paper)</div>
+      <figcaption>
+        <b>Qualitative comparison.</b> Noisy input, ground truth and the output of each method. Rows (b) and (d) are
+        zoomed views of the red boxes in rows (a) and (c). SharpXR suppresses noise while keeping rib edges and
+        lung contours sharp.
+      </figcaption>
+    </figure>
+  </div>
+</div>
+
+<!-- ================= ABSTRACT ================= -->
+<section id="abstract">
+  <div class="container narrow">
+    <h2 class="center">Abstract</h2>
+    <p class="justify">
+      Pediatric chest X-ray imaging is essential for early diagnosis, particularly in
+      <strong>low-resource settings</strong> where advanced imaging modalities are often inaccessible. Low-dose
+      protocols reduce radiation exposure in children but introduce substantial noise that can obscure critical
+      anatomical details. Conventional denoising methods often degrade fine details, compromising diagnostic accuracy.
+    </p>
+    <p class="justify">
+      In this paper, we present <strong>SharpXR</strong>, a structure-aware dual-decoder U-Net designed to denoise
+      low-dose pediatric X-rays while preserving diagnostically relevant features. SharpXR combines a
+      <strong>Laplacian-guided edge-preserving decoder</strong> with a <strong>learnable fusion module</strong> that
+      adaptively balances noise suppression and structural detail retention. To address the scarcity of paired
+      training data, we simulate realistic Poisson-Gaussian noise on the Pediatric Pneumonia Chest X-ray dataset.
+    </p>
+    <p class="justify">
+      SharpXR outperforms state-of-the-art baselines across all evaluation metrics while maintaining computational
+      efficiency suitable for resource-constrained settings. SharpXR-denoised images improved downstream pneumonia
+      classification accuracy from <strong>88.8% to 92.5%</strong>, underscoring its diagnostic value in low-resource
+      pediatric care.
+    </p>
+  </div>
+</section>
+
+<!-- ================= OVERVIEW ================= -->
+<section id="overview">
+  <div class="container">
+    <h2 class="center">Overview</h2>
+    <div class="cards">
+      <div class="card">
+        <h4>Dual-Decoder Design</h4>
+        <p>A shared encoder feeds a denoising decoder and an edge-aware decoder, one for smooth reconstruction and one for sharp anatomy.</p>
+      </div>
+      <div class="card">
+        <h4>Laplacian-Guided Edges</h4>
+        <p>Laplacian-enhanced skip connections amplify anatomical boundaries so ribs and lung contours survive denoising.</p>
+      </div>
+      <div class="card">
+        <h4>Learnable Fusion</h4>
+        <p>A fusion module adaptively blends both decoders, balancing noise suppression against structural detail.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= METHOD ================= -->
+<section id="method">
+  <div class="container">
+    <h2>Method</h2>
+
+    <figure data-img>
+      <img src="images/architecture.png" alt="SharpXR architecture diagram">
+      <div class="img-missing">Add <code>images/architecture.png</code> (Figure 1 from the paper)</div>
+      <figcaption>
+        <b>SharpXR architecture.</b> A shared encoder feeds two decoders: a standard denoising decoder and an
+        edge-aware decoder that receives Laplacian-enhanced skip connections. A learnable fusion module combines
+        their outputs into the final denoised X-ray.
+      </figcaption>
+    </figure>
+
+    <div class="cols" style="margin-top: 28px;">
+      <div>
+        <h3>Simulating low-dose noise</h3>
+        <p class="justify">
+          Paired low-dose and standard-dose pediatric chest X-rays are not publicly available, so we add
+          Poisson-Gaussian noise to clean images from the Pediatric Pneumonia Chest X-ray dataset. The Poisson
+          rate <i>&eta;</i> ranges over [50, 300] and the Gaussian standard deviation <i>&sigma;</i> over [5, 30].
+          The dataset has 5,856 images of children aged 1&ndash;5 years.
+        </p>
+      </div>
+      <div>
+        <h3>Training details</h3>
+        <p class="justify">
+          Images are resized to 256&times;256 and split 75/10/15 into 4,391 training, 586 validation and 879 test
+          images. We train with an RMSE loss and Adam (learning rate 1e-4), batch size 4, for up to 50 epochs on a
+          single NVIDIA T4 GPU.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="results">
+  <div class="container">
+    <h2>Results</h2>
+
+    <h3>Overall benchmark</h3>
+    <p class="justify">SharpXR achieves the best performance across all metrics on the test set.</p>
+
+    <div class="table-wrap">
+      <table>
+        <caption><b>Table 1.</b> Quantitative comparison of denoising models. RMSE: lower is better. PSNR, SSIM, SNR: higher is better. Best values in bold.</caption>
+        <thead>
+          <tr><th>Model</th><th>RMSE</th><th>PSNR</th><th>SSIM</th><th>SNR</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Attention U-Net</td><td>0.0193 <span class="pm">&plusmn; 0.001</span></td><td>34.44 <span class="pm">&plusmn; 0.12</span></td><td>0.8876 <span class="pm">&plusmn; 0.004</span></td><td>28.76 <span class="pm">&plusmn; 0.15</span></td></tr>
+          <tr><td>Sharp U-Net</td><td>0.0172 <span class="pm">&plusmn; 0.001</span></td><td>35.40 <span class="pm">&plusmn; 0.11</span></td><td>0.9261 <span class="pm">&plusmn; 0.002</span></td><td>29.72 <span class="pm">&plusmn; 0.14</span></td></tr>
+          <tr><td>HFormer</td><td>0.0271 <span class="pm">&plusmn; 0.002</span></td><td>31.46 <span class="pm">&plusmn; 0.21</span></td><td>0.8464 <span class="pm">&plusmn; 0.005</span></td><td>25.78 <span class="pm">&plusmn; 0.24</span></td></tr>
+          <tr><td>ResUNet++</td><td>0.0317 <span class="pm">&plusmn; 0.003</span></td><td>31.89 <span class="pm">&plusmn; 0.20</span></td><td>0.8569 <span class="pm">&plusmn; 0.004</span></td><td>26.17 <span class="pm">&plusmn; 0.23</span></td></tr>
+          <tr><td>REDCNN</td><td>0.0181 <span class="pm">&plusmn; 0.001</span></td><td>34.95 <span class="pm">&plusmn; 0.13</span></td><td>0.9140 <span class="pm">&plusmn; 0.003</span></td><td>29.20 <span class="pm">&plusmn; 0.16</span></td></tr>
+          <tr><td>DnCNN</td><td>0.0203 <span class="pm">&plusmn; 0.001</span></td><td>33.97 <span class="pm">&plusmn; 0.14</span></td><td>0.8945 <span class="pm">&plusmn; 0.003</span></td><td>28.29 <span class="pm">&plusmn; 0.18</span></td></tr>
+          <tr><td>BM3D</td><td>0.0346 <span class="pm">&plusmn; 0.003</span></td><td>29.45 <span class="pm">&plusmn; 0.25</span></td><td>0.7003 <span class="pm">&plusmn; 0.006</span></td><td>22.85 <span class="pm">&plusmn; 0.30</span></td></tr>
+          <tr class="ours"><td><b>SharpXR (ours)</b></td><td><b>0.0170</b> <span class="pm">&plusmn; 0.001</span></td><td><b>35.52</b> <span class="pm">&plusmn; 0.12</span></td><td><b>0.9263</b> <span class="pm">&plusmn; 0.002</span></td><td><b>29.84</b> <span class="pm">&plusmn; 0.13</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Across noise levels</h3>
+    <p class="justify">
+      SharpXR outperforms all baselines in PSNR at every noise setting, showing robustness to both low photon
+      counts and strong electronic noise.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption><b>Table 2.</b> Denoised PSNR (dB) per noise level. Best values in bold.</caption>
+        <thead>
+          <tr><th>&sigma;</th><th>&eta;</th><th>Attention U-Net</th><th>DnCNN</th><th>HFormer</th><th>REDCNN</th><th>ResUNet++</th><th>Sharp U-Net</th><th>SharpXR</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>5</td><td>300</td><td>36.367</td><td>36.166</td><td>33.151</td><td>37.218</td><td>33.777</td><td>37.760</td><td class="best">37.819</td></tr>
+          <tr><td>10</td><td>200</td><td>35.092</td><td>34.915</td><td>32.295</td><td>35.856</td><td>32.696</td><td>36.475</td><td class="best">36.583</td></tr>
+          <tr><td>15</td><td>150</td><td>33.981</td><td>33.812</td><td>31.476</td><td>34.736</td><td>31.826</td><td>35.445</td><td class="best">35.569</td></tr>
+          <tr><td>20</td><td>100</td><td>32.897</td><td>32.726</td><td>30.648</td><td>33.698</td><td>30.803</td><td>34.491</td><td class="best">34.641</td></tr>
+          <tr><td>25</td><td>50</td><td>31.517</td><td>31.163</td><td>29.535</td><td>32.385</td><td>29.357</td><td>33.332</td><td class="best">33.514</td></tr>
+          <tr><td>30</td><td>100</td><td>31.428</td><td>31.125</td><td>29.522</td><td>32.405</td><td>29.378</td><td>33.343</td><td class="best">33.534</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.92rem;">SSIM results for the same noise levels are in Table 3 of the paper.</p>
+
+    <h3>Downstream pneumonia classification</h3>
+    <p class="justify">
+      To test clinical utility, we train identical classifiers on noisy, SharpXR-denoised and clean X-rays. Denoising
+      with SharpXR raises accuracy from <b>88.8%</b> to <b>92.5%</b>, close to the <b>93.7%</b> achieved on clean
+      images.
+    </p>
+  </div>
+</section>
+
+<!-- ================= ABLATION ================= -->
+<section id="ablation">
+  <div class="container">
+    <h2>Ablation Study</h2>
+    <p class="justify">
+      The dual decoder alone improves over the single-decoder baseline. Adding Laplacian filtering without fusion
+      slightly reduces SSIM, suggesting over-sharpening. The full model, with learnable fusion, performs best.
+    </p>
+
+    <div class="table-wrap">
+      <table>
+        <caption><b>Table 4.</b> Ablation of SharpXR components. Best values in bold.</caption>
+        <thead>
+          <tr><th>Model variant</th><th>RMSE</th><th>PSNR</th><th>SSIM</th><th>SNR</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Single decoder</td><td>0.0175</td><td>35.23</td><td>0.9257</td><td>29.52</td></tr>
+          <tr><td>Dual decoder only</td><td>0.0173</td><td>35.43</td><td>0.9257</td><td>29.64</td></tr>
+          <tr><td>Dual decoder + Laplacian (no fusion)</td><td>0.0175</td><td>35.28</td><td>0.9212</td><td>29.56</td></tr>
+          <tr class="ours"><td><b>SharpXR (full)</b></td><td><b>0.0170</b></td><td><b>35.52</b></td><td><b>0.9263</b></td><td><b>29.84</b></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DISCUSSION ================= -->
+<section id="discussion">
+  <div class="container">
+    <h2>Discussion and Limitations</h2>
+    <p class="justify">
+      <b>SharpXR shows strong denoising performance across metrics and noise levels.</b> The dual decoder with
+      learnable fusion maintains diagnostic structures while suppressing noise, which makes it promising for
+      real-world pediatric imaging, especially in low-dose and low-resource contexts. Below we discuss limitations.
+    </p>
+    <ul class="limits">
+      <li><b>Simulated noise:</b> Evaluation uses simulated Poisson-Gaussian noise because real low-dose ground-truth datasets with realistic noise are not yet available. Collecting such data is a goal for future studies.</li>
+      <li><b>Age range:</b> Our dataset covers children aged 1&ndash;5 years. Generalization to neonates and older children requires further validation because of anatomical differences.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= BIBTEX ================= -->
+<section id="bibtex">
+  <div class="container">
+    <div class="bibtex-head">
+      <h2>BibTeX</h2>
+      <button class="btn small" id="copy-bibtex" type="button">Copy</button>
+    </div>
+    <pre id="bibtex-text">@inproceedings{abolade2026sharpxr,
+  title     = {SharpXR: Structure-Aware Denoising for Pediatric Chest X-Rays},
+  author    = {Abolade, Ilerioluwakiiye and Idoko, Emmanuel and Odelola, Solomon and
+               Omoigui, Promise and Adebanwo, Adetola and Iorumbur, Aondana and
+               Anazodo, Udunna and Crimi, Alessandro and Confidence, Raymond},
+  booktitle = {Venue},
+  year      = {2026}
+}</pre>
+  </div>
+</section>
+
+<!-- ================= ACKNOWLEDGEMENTS ================= -->
+<section id="acknowledgements">
+  <div class="container">
+    <h2>Acknowledgements</h2>
+    <p class="justify">
+      We thank the ML Collective community for their generous compute resources and weekly feedback, and AFRICAI
+      for their mentorship. This work was partly supported by the Italian Ministry of University and Research (MUR)
+      under project PE0000013 &ndash; Future of Artificial Intelligence Research (FAIR).
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="container narrow">
+    <p>
+      This website is based on the
+      <a href="https://github.com/nerfies/nerfies.github.io" target="_blank" rel="noopener">Nerfies website template</a>,
+      which is licensed under a
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+    </p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
